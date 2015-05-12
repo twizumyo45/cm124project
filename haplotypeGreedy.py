@@ -4,9 +4,9 @@ import math
 from copy import copy, deepcopy
 
 #variable parameters
-numRows = 50
-numCols = 7
-numParents = 3 #start counting from 0; set to be about %% of number of individuals
+numRows = 100
+numCols = 15
+numParents = 7 #start counting from 0; set to be about %% of number of individuals
 
 #function to count the number of genotypes this phase pair explains
 def explainsGenotypes(phase1, genotypes, alrdyExplained):
@@ -96,7 +96,6 @@ genotypes = getGenotypes(dataIn)
 
 #ALGORITHM START
 print "----initializing----"
-currIndex = 0
 alrdyExplained = [False]*(numRows/2)
 hapSetSol = [[5]*numCols]*numRows
 
@@ -107,7 +106,26 @@ for i in range(0, numRows/2):
         alrdyExplained[i] = True
         hapSetSol[2*i] = genotypes[i]
         hapSetSol[2*i+1] = genotypes[i]
-        currIndex += 1
+        maxPhase1 = genotypes[i]
+        #also go thru and check how many genotypes it explains 
+        for j in range(0, numRows/2):
+            if (alrdyExplained[j] == False):
+                explains = True
+                altPhase = np.random.random_integers(0,1,numCols)
+                #build complementary phase for this genotype if exists
+                for k in range (0, numCols):
+                    if (genotypes[j][k] == 2):
+                        altPhase[k] = (maxPhase1[k] * -1) + 1
+                    elif (genotypes[j][k] == maxPhase1[k]):
+                        altPhase[k] = maxPhase1[k]
+                    else:
+                        explains = False
+                        
+                if (explains == True):
+                    hapSetSol[j*2] = maxPhase1
+                    hapSetSol[j*2+1] = altPhase
+                    alrdyExplained[j] = True
+        
 
 print "-----after init-----"
 print alrdyExplained
@@ -133,6 +151,7 @@ while (False in alrdyExplained):
         if (alrdyExplained[i] == False):
             explains = True
             altPhase = np.random.random_integers(0,1,numCols)
+            #build complementary phase for this genotype if exists
             for k in range (0, numCols):
                 if (genotypes[i][k] == 2):
                     altPhase[k] = (maxPhase1[k] * -1) + 1
